@@ -1,0 +1,3 @@
+<template>
+  <AdminUsuarios />
+</template>
