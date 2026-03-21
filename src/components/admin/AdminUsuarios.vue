@@ -305,7 +305,7 @@
                 <v-col cols="6">
                   <v-select
                     v-model="form.rol"
-                    :items="['EMPLEADO', 'ADMIN', 'RH']"
+                    :items="['EMPLEADO', 'LIDER', 'RH', 'ADMIN']"
                     label="Rol"
                     variant="outlined"
                     density="compact"
@@ -335,7 +335,7 @@
           </p>
           <v-select
             v-model="newRol"
-            :items="['EMPLEADO', 'ADMIN']"
+            :items="['EMPLEADO', 'LIDER', 'RH', 'ADMIN']"
             label="Nuevo rol"
             variant="outlined"
             density="compact"
@@ -431,7 +431,7 @@ const tab = ref('users')
 const saving = ref(false)
 
 // ── Filters ──────────────────────────────────────────────────────────
-const rolOptions = ['EMPLEADO', 'ADMIN', 'RH']
+const rolOptions = ['EMPLEADO', 'LIDER', 'RH', 'ADMIN']
 const activoOptions = [
   { title: 'Activo', value: '1' },
   { title: 'Inactivo', value: '0' },

@@ -48,6 +48,16 @@ export const useRHStore = defineStore('rh', {
       return res.data
     },
 
+    async fetchOrganigrama () {
+      const res = await api.get('/rh/organigrama')
+      return res.data.data
+    },
+
+    async asignarLider (username, liderUsername) {
+      const res = await api.put(`/rh/personal/${username}/lider`, { liderUsername })
+      return res.data
+    },
+
     async uploadOcr (file) {
       const formData = new FormData()
       formData.append('pdf', file)

@@ -17,7 +17,7 @@
               class="text-center"
               style="min-width: 120px"
             >
-              <v-chip :color="rol === 'ADMIN' ? 'primary' : rol === 'RH' ? 'info' : 'secondary'" size="small" variant="tonal">
+              <v-chip :color="rol === 'ADMIN' ? 'primary' : rol === 'RH' ? 'info' : rol === 'LIDER' ? 'warning' : 'secondary'" size="small" variant="tonal">
                 {{ rol }}
               </v-chip>
             </th>
@@ -74,7 +74,7 @@ import { useAdminStore } from '@/stores/admin'
 
 const store = useAdminStore()
 
-const roles = ['EMPLEADO', 'RH', 'ADMIN']
+const roles = ['EMPLEADO', 'LIDER', 'RH', 'ADMIN']
 const modulos = ref([])
 // permisos: { EMPLEADO: Set(['inicio', 'asistencia',...]), ADMIN: Set([...]) }
 const permisos = reactive({})
