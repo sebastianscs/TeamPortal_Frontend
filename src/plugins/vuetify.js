@@ -11,7 +11,23 @@ import 'vuetify/styles'
 // Composables
 import { createVuetify } from 'vuetify'
 
+const TABLE_DEFAULTS = {
+  itemsPerPageText: 'Registros por página',
+  itemsPerPageOptions: [
+    { value: 10, title: '10' },
+    { value: 25, title: '25' },
+    { value: 50, title: '50' },
+    { value: 100, title: '100' },
+    { value: -1, title: 'Todos' },
+  ],
+}
+
 export default createVuetify({
+  defaults: {
+    VDataTable: TABLE_DEFAULTS,
+    VDataTableServer: TABLE_DEFAULTS,
+    VDataTableVirtual: TABLE_DEFAULTS,
+  },
   theme: {
     defaultTheme: 'dark',
     themes: {
