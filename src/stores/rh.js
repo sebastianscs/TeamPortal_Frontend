@@ -68,5 +68,31 @@ export const useRHStore = defineStore('rh', {
       })
       return res.data.data
     },
+
+    // ── Turnos ────────────────────────────────────────────────────────────────
+    async fetchTurnos () {
+      const res = await api.get('/rh/turnos')
+      return res.data.data
+    },
+
+    async createTurno (data) {
+      const res = await api.post('/rh/turnos', data)
+      return res.data
+    },
+
+    async updateTurno (id, data) {
+      const res = await api.put(`/rh/turnos/${id}`, data)
+      return res.data
+    },
+
+    async getTurnoEmpleado (username) {
+      const res = await api.get(`/rh/personal/${username}/turno`)
+      return res.data.data
+    },
+
+    async asignarTurno (username, data) {
+      const res = await api.put(`/rh/personal/${username}/turno`, data)
+      return res.data
+    },
   },
 })

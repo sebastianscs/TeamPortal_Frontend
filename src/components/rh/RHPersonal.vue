@@ -17,6 +17,7 @@
       <v-tab value="personal" prepend-icon="mdi-account-group">Personal</v-tab>
       <v-tab value="asistencia" prepend-icon="mdi-calendar-check">Asistencia</v-tab>
       <v-tab value="organigrama" prepend-icon="mdi-sitemap">Organigrama</v-tab>
+      <v-tab value="turnos" prepend-icon="mdi-clock-outline">Turnos</v-tab>
     </v-tabs>
 
     <v-window v-model="tab">
@@ -121,6 +122,11 @@
       <!-- ── TAB ORGANIGRAMA ─────────────────────────────────────────────── -->
       <v-window-item value="organigrama">
         <RHOrganigrama />
+      </v-window-item>
+
+      <!-- ── TAB TURNOS ──────────────────────────────────────────────────── -->
+      <v-window-item value="turnos">
+        <RHTurnos />
       </v-window-item>
 
     </v-window>
@@ -388,6 +394,7 @@
   import FormSeccion from '@/components/rh/FormSeccion.vue'
   import RHAsistencia from '@/components/rh/RHAsistencia.vue'
   import RHOrganigrama from '@/components/rh/RHOrganigrama.vue'
+  import RHTurnos from '@/components/rh/RHTurnos.vue'
 
   const store = useRHStore()
   const tab   = ref('personal')
