@@ -230,9 +230,16 @@ const duracion = computed(() => {
   return mins > 0 ? (mins / 60).toFixed(1) : '--'
 })
 
+function extractTime (val) {
+  if (!val) return ''
+  const s = String(val)
+  if (/^\d{2}:\d{2}/.test(s)) return s.slice(0, 5)
+  try { return new Date(s).toISOString().slice(11, 16) } catch { return s.slice(0, 5) }
+}
+
 function fmtHora (val) {
-  if (!val) return '--'
-  return String(val).slice(0, 5)
+  const t = extractTime(val)
+  return t || '--'
 }
 
 function openCreate () {
@@ -248,8 +255,8 @@ function openEdit (item) {
   Object.assign(form, {
     clave:             item.clave,
     nombre:            item.nombre,
-    horaEntrada:       String(item.horaEntrada).slice(0, 5),
-    horaSalida:        String(item.horaSalida).slice(0, 5),
+    horaEntrada:       extractTime(item.horaEntrada),
+    horaSalida:        extractTime(item.horaSalida),
     toleranciaEntrada: item.toleranciaEntrada,
     toleranciaSalida:  item.toleranciaSalida,
     diasLaborables:    item.diasLaborables,
