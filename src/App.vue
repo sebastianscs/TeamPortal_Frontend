@@ -4,7 +4,7 @@
 
     <!-- Toolbar solo visible en móvil -->
     <v-app-bar v-if="authStore.isLoggedIn && !mdAndUp" flat color="surface-variant" density="compact">
-      <v-app-bar-nav-icon @click="navRef?.drawerOpen = true" />
+      <v-app-bar-nav-icon @click="openNav" />
       <span style="font-size: 13px">
         <span style="color: #8DC63F; font-weight: 700; letter-spacing: 1px;">TEAM</span><span style="color: #B5CA72; font-weight: 300; letter-spacing: 3px;">PORTAL</span>
       </span>
@@ -51,6 +51,10 @@
   const { mdAndUp } = useDisplay()
   const refreshing = ref(false)
   const navRef = ref(null)
+
+  function openNav () {
+    if (navRef.value) navRef.value.drawerOpen = true
+  }
 
   onMounted(() => {
     authStore.setupSessionTimers()
