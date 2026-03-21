@@ -51,16 +51,6 @@
         <v-card-text>
           <v-form ref="formRef">
             <v-row dense>
-              <v-col cols="12" sm="4">
-                <v-text-field
-                  v-model="form.clave"
-                  label="Clave *"
-                  variant="outlined"
-                  density="compact"
-                  placeholder="T-ADM"
-                  :rules="[v => !!v || 'Requerido']"
-                />
-              </v-col>
               <v-col cols="12" sm="8">
                 <v-text-field
                   v-model="form.nombre"
@@ -70,6 +60,21 @@
                   placeholder="Turno diurno administrativo"
                   :rules="[v => !!v || 'Requerido']"
                 />
+              </v-col>
+              <v-col cols="12" sm="4">
+                <v-text-field
+                  :model-value="form.clave"
+                  label="Clave"
+                  variant="outlined"
+                  density="compact"
+                  readonly
+                  hint="Generada automáticamente"
+                  persistent-hint
+                >
+                  <template #append-inner>
+                    <v-chip color="primary" density="compact" size="x-small" variant="tonal">auto</v-chip>
+                  </template>
+                </v-text-field>
               </v-col>
               <v-col cols="12" sm="6">
                 <v-text-field
@@ -158,7 +163,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRHStore } from '@/stores/rh'
 
 const store = useRHStore()
@@ -202,6 +207,20 @@ const FORM_DEFAULT = {
 }
 const form = reactive({ ...FORM_DEFAULT })
 let editId = null
+
+function generarClave (nombre) {
+  if (!nombre) return ''
+  const siglas = nombre
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(p => p && p !== 'turno' && p !== 'de' && p !== 'del' && p !== 'la' && p !== 'el')
+    .map(p => p[0].toUpperCase())
+    .join('')
+  return siglas ? `T-${siglas}` : ''
+}
+
+watch(() => form.nombre, val => { form.clave = generarClave(val) })
 
 const duracion = computed(() => {
   if (!form.horaEntrada || !form.horaSalida) return '--'
