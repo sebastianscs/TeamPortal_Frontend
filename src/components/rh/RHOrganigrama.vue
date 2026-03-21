@@ -220,10 +220,13 @@ const totalAsignados = computed(() =>
   data.lideres.reduce((sum, l) => sum + l.equipo.length, 0)
 )
 
+// Todos los usuarios activos pueden ser lider (Opción B)
+const todosUsuarios = ref([])
+
 const opcionesLider = computed(() =>
-  data.lideres.map(l => ({
-    label: `${l.nombreCompleto}${l.puesto ? ' — ' + l.puesto : ''}`,
-    value: l.username,
+  todosUsuarios.value.map(u => ({
+    label: `${u.nombreCompleto}${u.puesto ? ' — ' + u.puesto : ''}`,
+    value: u.username,
   }))
 )
 
@@ -238,9 +241,17 @@ function showSnack(text, color = 'success') {
 async function cargar() {
   loading.value = true
   try {
-    const res = await store.fetchOrganigrama()
-    data.lideres  = res.lideres
-    data.sinLider = res.sinLider
+    const [org, personal] = await Promise.all([
+      store.fetchOrganigrama(),
+      store.fetchPersonal(),
+    ])
+    data.lideres    = org.lideres
+    data.sinLider   = org.sinLider
+    todosUsuarios.value = personal.map(u => ({
+      username:       u.username,
+      nombreCompleto: u.nombreCompleto,
+      puesto:         u.puesto,
+    }))
   } catch {
     showSnack('Error al cargar el organigrama', 'error')
   } finally {

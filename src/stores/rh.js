@@ -16,8 +16,10 @@ export const useRHStore = defineStore('rh', {
         const params = search ? { search } : {}
         const res    = await api.get('/rh/personal', { params })
         this.personal = res.data.data ?? []
+        return this.personal
       } catch (err) {
         this.error = err.response?.data?.message || 'Error al cargar personal'
+        return []
       } finally {
         this.loading = false
       }
