@@ -1,8 +1,8 @@
 <template>
   <v-container class="pa-0" fluid>
-    <v-row density="compact" no-gutters style="height: 49dvh; width: 100%;">
-      <v-col class="h-100 pa-2" cols="12" lg="5" md="6">
-        <v-card class="h-100 d-flex flex-column align-center justify-center pa-6" color="surface-variant" rounded="lg">
+    <v-row class="home-row-top" density="compact" no-gutters>
+      <v-col class="pa-2" cols="12" lg="5" md="6">
+        <v-card class="d-flex flex-column align-center justify-center pa-6 home-card-top" color="surface-variant" rounded="lg">
           <v-avatar class="mb-4" size="80">
             <v-img :src="imageUrl" />
           </v-avatar>
@@ -17,8 +17,8 @@
         </v-card>
       </v-col>
 
-      <v-col class="h-100 pa-2" cols="12" lg="7" md="6">
-        <v-carousel align-content="center" height="100%">
+      <v-col class="pa-2" cols="12" lg="7" md="6">
+        <v-carousel align-content="center" class="home-carousel">
           <v-carousel-item cover>
             <v-card class="h-100" color="surface-variant" rounded="lg">
               <div class="h-100 d-flex flex-column align-center justify-center pa-6">
@@ -39,7 +39,7 @@
         </v-carousel>
       </v-col>
     </v-row>
-    <v-row density="compact" no-gutters style="height: 45dvh; width: 100%;">
+    <v-row class="home-row-bottom" density="compact" no-gutters>
       <v-col class="pa-2" cols="12" md="6">
         <v-card
           class="h-100 d-flex flex-column"
@@ -87,10 +87,9 @@
       </v-col>
       <v-col class="pa-2" cols="12" md="6">
         <v-card
-          class="d-flex flex-column"
+          class="d-flex flex-column home-card-ausente"
           color="surface-variant"
           rounded="lg"
-          style="height: 49dvh; overflow: hidden;"
         >
           <div class="d-flex align-center justify-space-between px-4 pt-4 pb-3">
             <div>
@@ -222,3 +221,21 @@
     await getPersonalAbsent()
   })
 </script>
+
+<style scoped>
+/* Desktop: filas con altura fija */
+@media (min-width: 960px) {
+  .home-row-top    { height: 49dvh; }
+  .home-row-bottom { height: 45dvh; }
+  .home-card-top   { height: 100%; }
+  .home-carousel   { height: 100% !important; }
+  .home-card-ausente { height: 49dvh; overflow: hidden; }
+}
+
+/* Móvil: altura automática, sin solapamiento */
+@media (max-width: 959px) {
+  .home-card-top     { min-height: 220px; }
+  .home-carousel     { height: 240px !important; }
+  .home-card-ausente { max-height: 50dvh; overflow-y: auto; }
+}
+</style>
