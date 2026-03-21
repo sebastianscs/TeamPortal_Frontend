@@ -7,6 +7,7 @@
     <v-skeleton-loader v-if="loading" type="table" />
 
     <v-card v-else variant="tonal">
+      <div class="permisos-table-wrapper">
       <v-table>
         <thead>
           <tr>
@@ -51,6 +52,7 @@
           </tr>
         </tbody>
       </v-table>
+      </div>
 
       <v-divider />
 

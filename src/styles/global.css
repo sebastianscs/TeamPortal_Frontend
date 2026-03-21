@@ -10,3 +10,53 @@
   padding-top: 0 !important;
   padding-bottom: 0 !important;
 }
+
+/* ── Responsividad global ─────────────────────────────────────────── */
+
+/* Diálogos: margen y ancho máximo en pantallas pequeñas */
+@media (max-width: 599px) {
+  .v-dialog > .v-overlay__content {
+    max-width: calc(100vw - 24px) !important;
+    margin: 12px !important;
+  }
+
+  /* Tablas: scroll horizontal en móvil */
+  .v-data-table {
+    overflow-x: auto !important;
+  }
+  .v-data-table__wrapper {
+    overflow-x: auto !important;
+  }
+
+  /* Contenedores: padding reducido en móvil */
+  .v-container {
+    padding: 12px !important;
+  }
+
+  /* Tabs: scroll horizontal si hay muchas */
+  .v-tabs {
+    overflow-x: auto !important;
+  }
+}
+
+/* Tabla de permisos (AdminPerfiles) — siempre con scroll */
+.permisos-table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+
+/* Tabla custom de asistencia — scroll garantizado */
+.asistencia-grid-wrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+
+/* Cards de resumen — wrap en móvil */
+@media (max-width: 599px) {
+  .summary-cards {
+    flex-direction: column !important;
+  }
+  .summary-cards > * {
+    width: 100% !important;
+  }
+}

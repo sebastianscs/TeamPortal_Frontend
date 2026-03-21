@@ -1,6 +1,14 @@
 <template>
   <v-app>
-    <AppNav v-if="authStore.isLoggedIn" />
+    <AppNav v-if="authStore.isLoggedIn" ref="navRef" />
+
+    <!-- Toolbar solo visible en móvil -->
+    <v-app-bar v-if="authStore.isLoggedIn && !mdAndUp" flat color="surface-variant" density="compact">
+      <v-app-bar-nav-icon @click="navRef?.drawerOpen = true" />
+      <span style="font-size: 13px">
+        <span style="color: #8DC63F; font-weight: 700; letter-spacing: 1px;">TEAM</span><span style="color: #B5CA72; font-weight: 300; letter-spacing: 3px;">PORTAL</span>
+      </span>
+    </v-app-bar>
 
     <v-main>
       <router-view />
@@ -36,10 +44,13 @@
 
 <script setup>
   import { ref, onMounted } from 'vue'
+  import { useDisplay } from 'vuetify'
   import { useAuthStore } from '@/stores/auth'
 
   const authStore = useAuthStore()
+  const { mdAndUp } = useDisplay()
   const refreshing = ref(false)
+  const navRef = ref(null)
 
   onMounted(() => {
     authStore.setupSessionTimers()
