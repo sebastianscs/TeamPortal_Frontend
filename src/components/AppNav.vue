@@ -56,21 +56,24 @@
 </template>
 
 <script setup>
-  import { computed, ref, watch } from 'vue'
+  import { computed, ref } from 'vue'
   import { useDisplay } from 'vuetify'
   import { useAuthStore } from '@/stores/auth'
 
   const authStore = useAuthStore()
   const { mdAndUp } = useDisplay()
   const rail = ref(true)
-  const drawerOpen = ref(mdAndUp.value)
+  const mobileOpen = ref(false)
 
-  // Al cambiar de móvil a desktop, asegurar que el drawer esté abierto
-  watch(mdAndUp, val => {
-    if (val) drawerOpen.value = true
+  // En desktop siempre abierto; en móvil controlado por mobileOpen
+  const drawerOpen = computed({
+    get: () => mdAndUp.value || mobileOpen.value,
+    set: val => {
+      mobileOpen.value = val
+    },
   })
 
-  defineExpose({ drawerOpen })
+  defineExpose({ drawerOpen: mobileOpen })
 
   const items = computed(() =>
     authStore.modulos.map(m => ({
