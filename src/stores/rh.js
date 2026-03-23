@@ -6,6 +6,8 @@ export const useRHStore = defineStore('rh', {
     personal: [],
     loading:  false,
     error:    null,
+    departamentos: [],
+    puestos: [],
   }),
 
   actions: {
@@ -92,6 +94,33 @@ export const useRHStore = defineStore('rh', {
 
     async asignarTurno (username, data) {
       const res = await api.put(`/rh/personal/${username}/turno`, data)
+      return res.data
+    },
+
+    async fetchDepartamentos () {
+      const res = await api.get('/rh/catalogos/departamentos')
+      this.departamentos = res.data.data ?? []
+      return this.departamentos
+    },
+    async createDepartamento (data) {
+      const res = await api.post('/rh/catalogos/departamentos', data)
+      return res.data
+    },
+    async updateDepartamento (id, data) {
+      const res = await api.put(`/rh/catalogos/departamentos/${id}`, data)
+      return res.data
+    },
+    async fetchPuestos () {
+      const res = await api.get('/rh/catalogos/puestos')
+      this.puestos = res.data.data ?? []
+      return this.puestos
+    },
+    async createPuesto (data) {
+      const res = await api.post('/rh/catalogos/puestos', data)
+      return res.data
+    },
+    async updatePuesto (id, data) {
+      const res = await api.put(`/rh/catalogos/puestos/${id}`, data)
       return res.data
     },
   },

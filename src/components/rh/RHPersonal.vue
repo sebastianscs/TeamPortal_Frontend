@@ -18,6 +18,7 @@
       <v-tab value="asistencia" prepend-icon="mdi-calendar-check">Asistencia</v-tab>
       <v-tab value="organigrama" prepend-icon="mdi-sitemap">Organigrama</v-tab>
       <v-tab value="turnos" prepend-icon="mdi-clock-outline">Turnos</v-tab>
+      <v-tab value="catalogos" prepend-icon="mdi-tag-multiple-outline">Catálogos</v-tab>
     </v-tabs>
 
     <v-window v-model="tab">
@@ -127,6 +128,11 @@
       <!-- ── TAB TURNOS ──────────────────────────────────────────────────── -->
       <v-window-item value="turnos">
         <RHTurnos />
+      </v-window-item>
+
+      <!-- ── TAB CATÁLOGOS ──────────────────────────────────────────────────── -->
+      <v-window-item value="catalogos">
+        <RHCatalogos />
       </v-window-item>
 
     </v-window>
@@ -281,10 +287,24 @@
               <FormSeccion titulo="Datos laborales">
                 <v-row dense>
                   <v-col cols="12" sm="6">
-                    <v-text-field v-model="form.puesto" label="Puesto / Cargo *" variant="outlined" density="comfortable" :rules="[required]" />
+                    <v-combobox
+                      v-model="form.puesto"
+                      :items="store.puestos.filter(p => p.activo).map(p => p.nombre)"
+                      label="Puesto / Cargo *"
+                      variant="outlined"
+                      density="comfortable"
+                      :rules="[required]"
+                    />
                   </v-col>
                   <v-col cols="12" sm="6">
-                    <v-text-field v-model="form.departamento" label="Departamento / Área *" variant="outlined" density="comfortable" :rules="[required]" />
+                    <v-combobox
+                      v-model="form.departamento"
+                      :items="store.departamentos.filter(d => d.activo).map(d => d.nombre)"
+                      label="Departamento / Área *"
+                      variant="outlined"
+                      density="comfortable"
+                      :rules="[required]"
+                    />
                   </v-col>
                   <v-col cols="12" sm="6">
                     <v-text-field v-model="form.fechaIngreso" label="Fecha de ingreso *" type="date" variant="outlined" density="comfortable" :rules="[required]" />
@@ -395,6 +415,7 @@
   import RHAsistencia from '@/components/rh/RHAsistencia.vue'
   import RHOrganigrama from '@/components/rh/RHOrganigrama.vue'
   import RHTurnos from '@/components/rh/RHTurnos.vue'
+  import RHCatalogos from '@/components/rh/RHCatalogos.vue'
 
   const store = useRHStore()
   const tab   = ref('personal')
@@ -631,5 +652,7 @@
   const snack = reactive({ show: false, text: '', color: 'success' })
   function showSnack (text, color = 'success') { Object.assign(snack, { show: true, text, color }) }
 
-  onMounted(fetchPersonal)
+  onMounted(async () => {
+    await Promise.all([fetchPersonal(), store.fetchDepartamentos(), store.fetchPuestos()])
+  })
 </script>
