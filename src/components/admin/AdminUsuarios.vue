@@ -25,6 +25,10 @@
         <v-icon start>mdi-history</v-icon>
         Auditoría
       </v-tab>
+      <v-tab value="avisos">
+        <v-icon start>mdi-bullhorn-outline</v-icon>
+        Avisos
+      </v-tab>
     </v-tabs>
 
     <!-- USUARIOS TAB -->
@@ -148,6 +152,11 @@
       <!-- PERFILES TAB -->
       <v-window-item value="perfiles">
         <AdminPerfiles />
+      </v-window-item>
+
+      <!-- AVISOS TAB -->
+      <v-window-item value="avisos">
+        <AdminAvisos />
       </v-window-item>
 
       <!-- AUDIT TAB -->
@@ -425,6 +434,7 @@
 import { ref, reactive, watch, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import AdminPerfiles from '@/components/admin/AdminPerfiles.vue'
+import AdminAvisos from '@/components/admin/AdminAvisos.vue'
 
 const store = useAdminStore()
 const tab = ref('users')

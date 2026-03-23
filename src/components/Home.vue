@@ -18,12 +18,13 @@
       </v-col>
 
       <v-col class="pa-2" cols="12" lg="7" md="6">
-        <v-carousel align-content="center" class="home-carousel">
-          <v-carousel-item cover>
+        <v-carousel align-content="center" class="home-carousel" :hide-delimiter-background="true" rounded="lg">
+          <!-- Slide de texto/valores fijo -->
+          <v-carousel-item>
             <v-card class="h-100" color="surface-variant" rounded="lg">
               <div class="h-100 d-flex flex-column align-center justify-center pa-6">
                 <div class="text-h6 text-center font-weight-bold mb-4">
-                  Valores de la empresa - Respeto
+                  Valores de la empresa — Respeto
                 </div>
                 <div class="text-body-1 text-center">
                   Fomentamos un ambiente de trabajo respetuoso y colaborativo, valorando la diversidad y promoviendo la
@@ -33,8 +34,27 @@
             </v-card>
           </v-carousel-item>
 
-          <v-carousel-item cover src="https://cdn.vuetifyjs.com/images/cards/hotel.jpg" />
+          <!-- Avisos dinámicos -->
+          <v-carousel-item v-for="aviso in avisosStore.avisos" :key="aviso.id">
+            <div class="h-100 aviso-slide" :class="`aviso-slide--${aviso.tipo.toLowerCase()}`">
+              <!-- Decoración de fondo -->
+              <div class="aviso-deco aviso-deco--1" />
+              <div class="aviso-deco aviso-deco--2" />
+              <div class="aviso-deco aviso-deco--3" />
 
+              <div class="h-100 d-flex flex-column align-center justify-center pa-8 text-center" style="position: relative; z-index: 1">
+                <v-icon class="mb-4 aviso-icon" :color="tipoColor(aviso.tipo)" size="52">{{ tipoIcon(aviso.tipo) }}</v-icon>
+                <div class="text-h5 font-weight-bold mb-3">{{ aviso.titulo }}</div>
+                <div v-if="aviso.contenido" class="text-body-1 aviso-contenido">{{ aviso.contenido }}</div>
+                <v-chip class="mt-4" :color="tipoColor(aviso.tipo)" size="small" variant="tonal">
+                  {{ tipoLabel(aviso.tipo) }}
+                </v-chip>
+              </div>
+            </div>
+          </v-carousel-item>
+
+          <!-- Slides de imagen fijos -->
+          <v-carousel-item cover src="https://cdn.vuetifyjs.com/images/cards/hotel.jpg" />
           <v-carousel-item cover src="https://cdn.vuetifyjs.com/images/cards/sunshine.jpg" />
         </v-carousel>
       </v-col>
@@ -152,6 +172,9 @@
 <script setup>
   import { computed, onMounted, ref } from 'vue'
   import api from '@/api'
+  import { useAvisosStore } from '@/stores/avisos'
+
+  const avisosStore = useAvisosStore()
   const imageUrl = localStorage.getItem('avatar') || 'https://res.cloudinary.com/dkvtklbab/image/upload/v1772424065/Gemini_Generated_Image_xqu1dxxqu1dxxqu1_szej44.png'
   const motivation = localStorage.getItem('motivation') || ''
   const name = localStorage.getItem('name') || 'Usuario'
@@ -216,9 +239,20 @@
       loading.value = false
     }
   }
+  function tipoColor (tipo) {
+    return { INFORMATIVO: 'info', AVISO: 'warning', URGENTE: 'error', CELEBRACION: 'primary' }[tipo] ?? 'secondary'
+  }
+  function tipoIcon (tipo) {
+    return { INFORMATIVO: 'mdi-information-outline', AVISO: 'mdi-bell-ring-outline', URGENTE: 'mdi-alert-octagon-outline', CELEBRACION: 'mdi-party-popper' }[tipo] ?? 'mdi-information'
+  }
+  function tipoLabel (tipo) {
+    return { INFORMATIVO: 'Informativo', AVISO: 'Aviso', URGENTE: 'Urgente', CELEBRACION: 'Celebración' }[tipo] ?? tipo
+  }
+
   onMounted(async () => {
     await getAsistence()
     await getPersonalAbsent()
+    await avisosStore.fetchAvisos()
   })
 </script>
 
@@ -238,4 +272,37 @@
   .home-carousel     { height: 240px !important; }
   .home-card-ausente { max-height: 50dvh; overflow-y: auto; }
 }
+
+/* Contener imágenes del carrusel */
+.home-carousel {
+  border-radius: 8px;
+  overflow: hidden !important;
+}
+
+/* Slides de avisos */
+.aviso-slide {
+  position: relative;
+  overflow: hidden;
+}
+.aviso-slide--informativo { background: linear-gradient(135deg, #1a2a3a 0%, #1e3448 100%); }
+.aviso-slide--aviso       { background: linear-gradient(135deg, #2a2000 0%, #3a2c00 100%); }
+.aviso-slide--urgente     { background: linear-gradient(135deg, #2a0a0a 0%, #3a1010 100%); }
+.aviso-slide--celebracion { background: linear-gradient(135deg, #0d1f0a 0%, #152b10 100%); }
+
+.aviso-deco {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.07;
+}
+.aviso-deco--1 { width: 300px; height: 300px; top: -80px;  right: -80px;  background: currentColor; }
+.aviso-deco--2 { width: 200px; height: 200px; bottom: -60px; left: -60px; background: currentColor; }
+.aviso-deco--3 { width: 150px; height: 150px; top: 40%;   left: 35%;     background: currentColor; }
+
+.aviso-slide--informativo .aviso-deco { color: #7ECEE8; }
+.aviso-slide--aviso       .aviso-deco { color: #FFD54F; }
+.aviso-slide--urgente     .aviso-deco { color: #F28B82; }
+.aviso-slide--celebracion .aviso-deco { color: #8DC63F; }
+
+.aviso-contenido { max-width: 480px; opacity: 0.85; }
+.aviso-icon { filter: drop-shadow(0 0 12px currentColor); opacity: 0.9; }
 </style>
