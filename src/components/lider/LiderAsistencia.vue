@@ -332,8 +332,15 @@ function iniciales(nombre) {
   return nombre?.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase() || '?'
 }
 
+function extractTime(val) {
+  if (!val) return ''
+  const s = String(val)
+  if (/^\d{2}:\d{2}/.test(s)) return s.slice(0, 5)
+  try { return new Date(s).toISOString().slice(11, 16) } catch { return '' }
+}
+
 function formatHora(hora) {
-  return hora ? String(hora).slice(0, 5) : '—'
+  return extractTime(hora) || '—'
 }
 
 function formatFecha(fecha) {
@@ -372,8 +379,8 @@ function abrirConfirmar(item) {
   Object.assign(confirmarForm, {
     username:      item.username,
     nombreCompleto: item.nombreCompleto,
-    horaEntrada:   item.horaEntrada ? formatHora(item.horaEntrada) : '',
-    horaSalida:    item.horaSalida  ? formatHora(item.horaSalida)  : '',
+    horaEntrada:   extractTime(item.horaEntrada),
+    horaSalida:    extractTime(item.horaSalida),
     estatus:       item.estatus || 'PUNTUAL',
   })
   dialogs.confirmar = true
