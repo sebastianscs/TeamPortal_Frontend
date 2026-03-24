@@ -115,7 +115,7 @@
 
           <!-- Acciones -->
           <template #item.acciones="{ item }">
-            <v-tooltip v-if="item.estatus !== 'VACACIONES'" text="Confirmar / corregir asistencia" location="start">
+            <v-tooltip v-if="!AUSENCIAS.includes(item.estatus)" text="Confirmar / corregir asistencia" location="start">
               <template #activator="{ props }">
                 <v-btn
                   v-bind="props"
@@ -126,7 +126,7 @@
                 />
               </template>
             </v-tooltip>
-            <v-icon v-else color="cyan" size="small" title="Empleado de vacaciones">mdi-beach</v-icon>
+            <v-icon v-else color="cyan" size="small" :title="etiquetaEstatus(item.estatus)">mdi-beach</v-icon>
           </template>
         </v-data-table>
       </v-window-item>
@@ -322,11 +322,13 @@ const headersIncidencias = [
 ]
 
 // ── Computed ──────────────────────────────────────────────────────────
+const AUSENCIAS = ['VACACIONES','INCAPACIDAD','PERMISO_GOCE','PERMISO_SIN_GOCE']
+
 const resumen = computed(() => ({
   puntual:    store.asistencia.filter(a => a.estatus === 'PUNTUAL').length,
   retardo:    store.asistencia.filter(a => a.estatus === 'RETARDO').length,
   falta:      store.asistencia.filter(a => ['FALTA','MEDIA_FALTA'].includes(a.estatus)).length,
-  vacaciones: store.asistencia.filter(a => a.estatus === 'VACACIONES').length,
+  vacaciones: store.asistencia.filter(a => AUSENCIAS.includes(a.estatus)).length,
 }))
 
 const sinRegistro = computed(() =>
@@ -355,17 +357,23 @@ function formatFecha(fecha) {
 }
 
 function colorEstatus(est) {
-  const m = { PUNTUAL: 'success', RETARDO: 'warning', FALTA: 'error',
-              MEDIA_FALTA: 'orange', JUSTIFICADA: 'info', HE_AUTORIZADA: 'purple',
-              PENDIENTE: 'warning', APROBADA: 'success', RECHAZADA: 'error',
-              VACACIONES: 'cyan' }
+  const m = {
+    PUNTUAL: 'success', RETARDO: 'warning', FALTA: 'error',
+    MEDIA_FALTA: 'orange', JUSTIFICADA: 'info', HE_AUTORIZADA: 'purple',
+    PENDIENTE: 'warning', APROBADA: 'success', RECHAZADA: 'error',
+    VACACIONES: 'cyan', INCAPACIDAD: 'blue-grey',
+    PERMISO_GOCE: 'teal', PERMISO_SIN_GOCE: 'teal',
+  }
   return m[est] || 'surface-variant'
 }
 
 function etiquetaEstatus(est) {
-  const m = { PUNTUAL: 'Puntual', RETARDO: 'Retardo', FALTA: 'Falta',
-              MEDIA_FALTA: 'Media falta', JUSTIFICADA: 'Justificada', HE_AUTORIZADA: 'HE autorizada',
-              VACACIONES: 'Vacaciones' }
+  const m = {
+    PUNTUAL: 'Puntual', RETARDO: 'Retardo', FALTA: 'Falta',
+    MEDIA_FALTA: 'Media falta', JUSTIFICADA: 'Justificada', HE_AUTORIZADA: 'HE autorizada',
+    VACACIONES: 'Vacaciones', INCAPACIDAD: 'Incapacidad',
+    PERMISO_GOCE: 'Permiso c/goce', PERMISO_SIN_GOCE: 'Permiso s/goce',
+  }
   return m[est] || est
 }
 
