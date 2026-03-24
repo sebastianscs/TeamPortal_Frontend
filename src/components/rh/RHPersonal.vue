@@ -20,6 +20,8 @@
       <v-tab value="turnos" prepend-icon="mdi-clock-outline">Turnos</v-tab>
       <v-tab value="catalogos" prepend-icon="mdi-tag-multiple-outline">Catálogos</v-tab>
       <v-tab value="expediente" prepend-icon="mdi-folder-account">Expediente</v-tab>
+      <v-tab value="aprobacion" prepend-icon="mdi-check-decagram">Aprobación</v-tab>
+      <v-tab value="checador" prepend-icon="mdi-router-wireless">Checador</v-tab>
     </v-tabs>
 
     <v-window v-model="tab">
@@ -134,6 +136,16 @@
       <!-- ── TAB CATÁLOGOS ──────────────────────────────────────────────────── -->
       <v-window-item value="catalogos">
         <RHCatalogos />
+      </v-window-item>
+
+      <!-- ── TAB APROBACIÓN ─────────────────────────────────────────────────── -->
+      <v-window-item value="aprobacion">
+        <RHAsistenciaAprobacion />
+      </v-window-item>
+
+      <!-- ── TAB CHECADOR ────────────────────────────────────────────────────── -->
+      <v-window-item value="checador">
+        <RHChecador />
       </v-window-item>
 
       <!-- ── TAB EXPEDIENTE ─────────────────────────────────────────────────── -->
@@ -456,6 +468,8 @@
   import RHTurnos from '@/components/rh/RHTurnos.vue'
   import RHCatalogos from '@/components/rh/RHCatalogos.vue'
   import RHExpediente from '@/components/rh/RHExpediente.vue'
+  import RHAsistenciaAprobacion from '@/components/rh/RHAsistenciaAprobacion.vue'
+  import RHChecador from '@/components/rh/RHChecador.vue'
 
   const store = useRHStore()
   const tab   = ref('personal')
