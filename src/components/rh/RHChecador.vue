@@ -38,6 +38,11 @@
                     <v-btn v-bind="props" icon="mdi-wifi" size="small" variant="text" :loading="testingId === item.id" @click="probarConexion(item)" />
                   </template>
                 </v-tooltip>
+                <v-tooltip text="Previsualizar registros">
+                  <template #activator="{ props }">
+                    <v-btn v-bind="props" icon="mdi-eye" size="small" variant="text" color="secondary" :loading="previewingId === item.id" @click="previsualizar(item)" />
+                  </template>
+                </v-tooltip>
                 <v-tooltip text="Sincronizar ahora">
                   <template #activator="{ props }">
                     <v-btn v-bind="props" icon="mdi-sync" size="small" variant="text" color="primary" :loading="syncingId === item.id" @click="sincronizar(item)" />
@@ -151,6 +156,44 @@
       </v-card>
     </v-dialog>
 
+    <!-- Dialog previsualización -->
+    <v-dialog v-model="previewDialog" max-width="900">
+      <v-card color="surface-variant" rounded="lg">
+        <div class="d-flex align-center justify-space-between px-4 pt-4 pb-2">
+          <div>
+            <div class="text-h6 font-weight-bold">Registros del checador</div>
+            <div class="text-caption text-medium-emphasis">
+              Total: <strong>{{ previewData.totalRegistros }}</strong> registros —
+              Campos disponibles: <code>{{ previewData.camposDisponibles?.join(', ') }}</code>
+            </div>
+          </div>
+          <v-btn icon size="small" variant="text" @click="previewDialog = false"><v-icon>mdi-close</v-icon></v-btn>
+        </div>
+        <v-divider />
+        <v-card-text class="pa-0">
+          <v-data-table
+            :headers="headersPreview"
+            :items="previewData.muestra || []"
+            density="compact"
+            hover
+            :items-per-page="10"
+          >
+            <template #item.attTime="{ item }">
+              {{ item.attTime ? new Date(item.attTime).toLocaleString('es-MX') : '—' }}
+            </template>
+            <template #item.verifyType="{ item }">
+              <v-chip size="x-small" variant="tonal">{{ verifyTypeLabel(item.verifyType) }}</v-chip>
+            </template>
+            <template #item.inOutStatus="{ item }">
+              <v-chip size="x-small" :color="item.inOutStatus === 0 ? 'success' : 'warning'" variant="tonal">
+                {{ item.inOutStatus === 0 ? 'Entrada' : item.inOutStatus === 1 ? 'Salida' : item.inOutStatus }}
+              </v-chip>
+            </template>
+          </v-data-table>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
     <v-snackbar v-model="snack.show" :color="snack.color" timeout="4000" location="bottom end">
       {{ snack.text }}
     </v-snackbar>
@@ -167,6 +210,9 @@ const tab = ref('dispositivos')
 const saving = ref(false)
 const testingId = ref(null)
 const syncingId = ref(null)
+const previewingId = ref(null)
+const previewDialog = ref(false)
+const previewData = ref({ totalRegistros: 0, muestra: [], camposDisponibles: [] })
 const dialog = ref(false)
 const mapeoDialog = ref(false)
 const editTarget = ref(null)
@@ -177,6 +223,16 @@ const snack = reactive({ show: false, text: '', color: 'success' })
 
 const form = reactive({ nombre: '', ip: '', puerto: 4370, password: 0, ubicacion: '', activo: true })
 const mapeoForm = reactive({ deviceUserId: null, username: '' })
+
+const headersPreview = [
+  { title: 'ID dispositivo', key: 'deviceUserId', align: 'center' },
+  { title: 'Fecha/Hora', key: 'attTime' },
+  { title: 'Tipo verificación', key: 'verifyType', align: 'center' },
+  { title: 'Entrada/Salida', key: 'inOutStatus', align: 'center' },
+  { title: 'IP', key: 'ip' },
+]
+
+const verifyTypeLabel = (v) => ({ 0: 'Contraseña', 1: 'Huella', 3: 'Tarjeta', 4: 'Cara' }[v] ?? `Tipo ${v}`)
 
 const headersDisp = [
   { title: 'Nombre', key: 'nombre' },
@@ -235,6 +291,17 @@ async function submitDialog() {
     showSnack(editTarget.value ? 'Dispositivo actualizado' : 'Dispositivo creado')
   } catch { showSnack('Error al guardar', 'error') }
   finally { saving.value = false }
+}
+
+async function previsualizar(item) {
+  previewingId.value = item.id
+  try {
+    const r = await api.get(`/checador/${item.id}/preview`)
+    previewData.value = r.data
+    previewDialog.value = true
+  } catch (e) {
+    showSnack(e.response?.data?.message || 'Error al obtener registros', 'error')
+  } finally { previewingId.value = null }
 }
 
 async function probarConexion(item) {

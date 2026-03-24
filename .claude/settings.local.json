@@ -8,7 +8,8 @@
       "Bash(npm audit:*)",
       "Bash(npm uninstall:*)",
       "Bash(grep -r \"from ''xlsx''\\\\|require\\(''xlsx''\\)\\\\|import\\(''xlsx''\\)\" \"c:/Users/El sebas/Documents/TeamPortal_Backend/src\")",
-      "Bash(node -e \"require\\(''node-zklib''\\); console.log\\(''OK''\\)\")"
+      "Bash(node -e \"require\\(''node-zklib''\\); console.log\\(''OK''\\)\")",
+      "Bash(npx patch-package:*)"
     ]
   }
 }
