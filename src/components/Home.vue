@@ -259,24 +259,36 @@
 <style scoped>
 /* Desktop: filas con altura fija */
 @media (min-width: 960px) {
-  .home-row-top    { height: 49dvh; }
-  .home-row-bottom { height: 45dvh; }
-  .home-card-top   { height: 100%; }
-  .home-carousel   { height: 100% !important; }
+  .home-row-top      { height: 49dvh; }
+  .home-row-bottom   { height: 45dvh; }
+  .home-card-top     { height: 100%; }
+  .home-carousel     { height: calc(49dvh - 16px) !important; max-height: calc(49dvh - 16px) !important; }
   .home-card-ausente { height: 49dvh; overflow: hidden; }
 }
 
 /* Móvil: altura automática, sin solapamiento */
 @media (max-width: 959px) {
   .home-card-top     { min-height: 220px; }
-  .home-carousel     { height: 240px !important; }
+  .home-carousel     { height: 240px !important; max-height: 240px !important; }
   .home-card-ausente { max-height: 50dvh; overflow-y: auto; }
 }
 
-/* Contener imágenes del carrusel */
+/* Carrusel: contener todo dentro del alto asignado */
 .home-carousel {
   border-radius: 8px;
   overflow: hidden !important;
+}
+.home-carousel :deep(.v-window__container),
+.home-carousel :deep(.v-window-item),
+.home-carousel :deep(.v-carousel__item) {
+  height: 100% !important;
+  overflow: hidden !important;
+}
+.home-carousel :deep(.v-img),
+.home-carousel :deep(.v-img__img) {
+  height: 100% !important;
+  width: 100% !important;
+  object-fit: cover !important;
 }
 
 /* Slides de avisos */
