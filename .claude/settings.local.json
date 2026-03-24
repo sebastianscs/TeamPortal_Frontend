@@ -4,7 +4,10 @@
       "Bash(grep -E \"\\\\.\\(js|ts\\)$\")",
       "Bash(find c:UsersSebastián.claude -type f -name *.md)",
       "Bash(npm install:*)",
-      "Bash(node -e \"require\\(''''pdf-parse''''\\)\")"
+      "Bash(node -e \"require\\(''''pdf-parse''''\\)\")",
+      "Bash(npm audit:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(grep -r \"from ''xlsx''\\\\|require\\(''xlsx''\\)\\\\|import\\(''xlsx''\\)\" \"c:/Users/El sebas/Documents/TeamPortal_Backend/src\")"
     ]
   }
 }
