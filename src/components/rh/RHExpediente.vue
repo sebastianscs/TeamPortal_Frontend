@@ -95,6 +95,61 @@
       </v-card>
     </v-dialog>
 
+    <!-- Dialog resultado OCR -->
+    <v-dialog v-model="ocrInfo.show" max-width="460">
+      <v-card color="surface-variant" rounded="lg">
+        <div class="d-flex align-center gap-2 px-4 pt-4 pb-2">
+          <v-icon color="primary">mdi-text-recognition</v-icon>
+          <span class="text-h6 font-weight-bold">Datos extraídos del PDF</span>
+        </div>
+        <v-divider />
+        <v-card-text class="pa-4">
+          <v-alert
+            v-if="ocrInfo.actualizados.length > 0"
+            class="mb-3"
+            color="success"
+            density="compact"
+            variant="tonal"
+            :text="`${ocrInfo.actualizados.length} campo(s) actualizados automáticamente en el perfil`"
+          />
+          <v-alert
+            v-else
+            class="mb-3"
+            color="info"
+            density="compact"
+            variant="tonal"
+            text="Los campos ya tenían valores — no se sobreescribió ninguno"
+          />
+          <v-list density="compact" bg-color="transparent">
+            <v-list-item
+              v-for="(val, key) in ocrInfo.campos"
+              :key="key"
+              class="px-0"
+            >
+              <template #prepend>
+                <v-icon
+                  :color="ocrInfo.actualizados.includes(key) ? 'success' : 'medium-emphasis'"
+                  size="18"
+                  class="mr-2"
+                >
+                  {{ ocrInfo.actualizados.includes(key) ? 'mdi-check-circle' : 'mdi-circle-outline' }}
+                </v-icon>
+              </template>
+              <template #title>
+                <span class="text-caption text-medium-emphasis">{{ OCR_LABELS[key] ?? key }}</span>
+              </template>
+              <template #subtitle>
+                <span class="text-body-2 font-weight-medium">{{ val }}</span>
+              </template>
+            </v-list-item>
+          </v-list>
+        </v-card-text>
+        <v-card-actions class="pa-4 pt-0 justify-end">
+          <v-btn color="primary" variant="tonal" @click="ocrInfo.show = false">Entendido</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-snackbar v-model="snack.show" :color="snack.color" timeout="3000" location="bottom end">{{ snack.text }}</v-snackbar>
   </div>
 </template>
@@ -109,7 +164,8 @@ const loading = ref(false)
 const saving  = ref(false)
 const dialog  = ref(false)
 const documentos = ref([])
-const snack = reactive({ show: false, text: '', color: 'success' })
+const snack   = reactive({ show: false, text: '', color: 'success' })
+const ocrInfo = reactive({ show: false, campos: {}, actualizados: [] })
 const form  = reactive({ tipo: 'OTRO', archivo: null, fechaVencimiento: '' })
 
 const tiposDocumento = [
@@ -170,12 +226,30 @@ async function subir() {
     fd.append('documento', form.archivo)
     fd.append('tipo', form.tipo)
     if (form.fechaVencimiento) fd.append('fechaVencimiento', form.fechaVencimiento)
-    await store.uploadDocumento(props.username, fd)
+    const res = await store.uploadDocumento(props.username, fd)
     dialog.value = false
-    showSnack('Documento subido correctamente')
     await cargar()
+
+    // Mostrar resultado de OCR si el backend extrajo datos
+    const ocr = res?.ocr
+    if (ocr?.ejecutado && Object.keys(ocr.camposEncontrados ?? {}).length > 0) {
+      ocrInfo.campos      = ocr.camposEncontrados
+      ocrInfo.actualizados = ocr.camposActualizados ?? []
+      ocrInfo.show = true
+    } else {
+      showSnack('Documento subido correctamente')
+    }
   } catch { showSnack('Error al subir documento', 'error') }
   finally { saving.value = false }
+}
+
+// Etiqueta legible para cada campo OCR
+const OCR_LABELS = {
+  curp: 'CURP', rfc: 'RFC', nss: 'NSS', clabe: 'CLABE',
+  fechaNacimiento: 'Fecha de nacimiento', sexo: 'Sexo',
+  banco: 'Banco', regimenFiscal: 'Régimen fiscal', nacionalidad: 'Nacionalidad',
+  domicilio: 'Domicilio', ciudad: 'Ciudad / Municipio',
+  estadoResidencia: 'Estado', telefono: 'Teléfono',
 }
 
 async function eliminar(id) {
