@@ -354,6 +354,7 @@
               label="Empleado"
               :rules="[v => !!v || 'El empleado es requerido']"
               variant="outlined"
+              :custom-filter="searchFilter"
             />
 
             <v-text-field
@@ -508,6 +509,7 @@
   import { onMounted, ref } from 'vue'
   import { useRouter } from 'vue-router'
   import { useNominaStore } from '@/stores/nomina'
+  import { searchFilter } from '@/utils/search'
   import NomPrestamosCrud from '@/components/nomina/NomPrestamosCrud.vue'
   import NomConfigISR     from '@/components/nomina/NomConfigISR.vue'
   import NomCalendario    from '@/components/nomina/NomCalendario.vue'

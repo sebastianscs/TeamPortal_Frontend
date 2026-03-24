@@ -294,6 +294,7 @@
                       variant="outlined"
                       density="comfortable"
                       :rules="[required]"
+                      :custom-filter="searchFilter"
                     />
                   </v-col>
                   <v-col cols="12" sm="6">
@@ -304,6 +305,7 @@
                       variant="outlined"
                       density="comfortable"
                       :rules="[required]"
+                      :custom-filter="searchFilter"
                     />
                   </v-col>
                   <v-col cols="12" sm="6">
@@ -411,6 +413,7 @@
 <script setup>
   import { computed, reactive, ref, watch, onMounted } from 'vue'
   import { useRHStore } from '@/stores/rh'
+  import { searchFilter } from '@/utils/search'
   import FormSeccion from '@/components/rh/FormSeccion.vue'
   import RHAsistencia from '@/components/rh/RHAsistencia.vue'
   import RHOrganigrama from '@/components/rh/RHOrganigrama.vue'

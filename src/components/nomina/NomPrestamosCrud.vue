@@ -77,6 +77,7 @@
             label="Empleado *"
             variant="outlined"
             density="comfortable"
+            :custom-filter="searchFilter"
           />
           <v-text-field v-model="form.concepto" label="Concepto" variant="outlined" density="comfortable" />
           <v-row dense>
@@ -114,6 +115,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useNominaStore } from '@/stores/nomina'
+import { searchFilter } from '@/utils/search'
 import api from '@/api'
 
 const store   = useNominaStore()
