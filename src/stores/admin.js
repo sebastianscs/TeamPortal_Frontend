@@ -75,5 +75,29 @@ export const useAdminStore = defineStore('admin', {
         this.loading = false
       }
     },
+
+    async fetchStats () {
+      const res = await api.get('/admin/stats')
+      return res.data.data
+    },
+
+    async resetPassword (id) {
+      const res = await api.post(`/admin/users/${id}/reset-password`)
+      return res.data
+    },
+
+    async fetchSesiones (id) {
+      const res = await api.get(`/admin/users/${id}/sesiones`)
+      return res.data.data
+    },
+
+    async importUsers (file) {
+      const formData = new FormData()
+      formData.append('excel', file)
+      const res = await api.post('/admin/users/import', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      return res.data.data  // { creados: N, errores: [...] }
+    },
   },
 })

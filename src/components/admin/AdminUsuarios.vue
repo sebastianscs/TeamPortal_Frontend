@@ -6,10 +6,70 @@
         <div class="text-h5 font-weight-bold">Administración de Usuarios</div>
         <div class="text-body-2 text-medium-emphasis mt-1">Gestiona cuentas, roles y permisos del equipo</div>
       </div>
-      <v-btn color="primary" prepend-icon="mdi-account-plus" @click="openCreate">
-        Nuevo usuario
-      </v-btn>
+      <div class="d-flex gap-2">
+        <input ref="excelInput" type="file" accept=".xlsx,.xls" style="display:none" @change="handleImportFile" />
+        <v-btn
+          prepend-icon="mdi-file-excel"
+          variant="tonal"
+          @click="excelInput.click()"
+        >
+          Importar Excel
+        </v-btn>
+        <v-btn color="primary" prepend-icon="mdi-account-plus" @click="openCreate">
+          Nuevo usuario
+        </v-btn>
+      </div>
     </div>
+
+    <!-- Stats cards -->
+    <v-row dense class="mb-4">
+      <v-col cols="6" sm="3">
+        <v-card color="surface-variant" rounded="lg" variant="tonal">
+          <div class="pa-3 text-center">
+            <div class="text-h5 font-weight-bold text-primary">{{ stats.activos }}</div>
+            <div class="text-caption text-medium-emphasis">Usuarios activos</div>
+          </div>
+        </v-card>
+      </v-col>
+      <v-col cols="6" sm="3">
+        <v-card color="surface-variant" rounded="lg" variant="tonal">
+          <div class="pa-3 text-center">
+            <div class="text-h5 font-weight-bold text-medium-emphasis">{{ stats.inactivos }}</div>
+            <div class="text-caption text-medium-emphasis">Inactivos</div>
+          </div>
+        </v-card>
+      </v-col>
+      <v-col cols="6" sm="3">
+        <v-card color="surface-variant" rounded="lg" variant="tonal">
+          <div class="pa-3 text-center">
+            <div class="text-h5 font-weight-bold text-success">{{ stats.newThisMonth }}</div>
+            <div class="text-caption text-medium-emphasis">Nuevos este mes</div>
+          </div>
+        </v-card>
+      </v-col>
+      <v-col cols="6" sm="3">
+        <v-card color="surface-variant" rounded="lg" variant="tonal">
+          <div class="pa-3 d-flex flex-column gap-1">
+            <div
+              v-for="r in stats.byRol"
+              :key="r.rol + r.activo"
+              class="d-flex align-center justify-space-between"
+            >
+              <v-chip
+                v-if="r.activo"
+                :color="rolColor(r.rol)"
+                density="compact"
+                size="x-small"
+                variant="tonal"
+              >
+                {{ r.rol }}
+              </v-chip>
+              <span v-if="r.activo" class="text-caption font-weight-bold">{{ r.total }}</span>
+            </div>
+          </div>
+        </v-card>
+      </v-col>
+    </v-row>
 
     <!-- Tabs -->
     <v-tabs v-model="tab" color="primary" class="mb-4">
@@ -135,6 +195,8 @@
                   <v-list-item prepend-icon="mdi-pencil" title="Editar datos" @click="openEdit(item)" />
                   <v-list-item prepend-icon="mdi-shield-account" title="Cambiar rol" @click="openRol(item)" />
                   <v-list-item prepend-icon="mdi-lock-reset" title="Cambiar contraseña" @click="openPassword(item)" />
+                  <v-list-item prepend-icon="mdi-lock-remove-outline" title="Restablecer contraseña" @click="confirmReset(item)" />
+                  <v-list-item prepend-icon="mdi-devices" title="Ver sesiones" @click="openSesiones(item)" />
                   <v-divider />
                   <v-list-item
                     :prepend-icon="item.activo ? 'mdi-account-off' : 'mdi-account-check'"
@@ -423,6 +485,118 @@
       </v-card>
     </v-dialog>
 
+    <!-- RESET PASSWORD CONFIRM -->
+    <v-dialog v-model="dialogs.reset" max-width="400">
+      <v-card>
+        <v-card-title class="pa-4 pb-2">Restablecer contraseña</v-card-title>
+        <v-card-text>
+          <p class="text-body-2">
+            Se restablecerá la contraseña de <strong>{{ resetTarget?.username }}</strong>
+            al valor predeterminado del sistema. El usuario deberá cambiarla al iniciar sesión.
+          </p>
+        </v-card-text>
+        <v-card-actions class="pa-4 pt-0 justify-end gap-2">
+          <v-btn variant="text" @click="dialogs.reset = false">Cancelar</v-btn>
+          <v-btn color="warning" variant="flat" :loading="saving" @click="submitReset">Restablecer</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- SESIONES DIALOG -->
+    <v-dialog v-model="dialogs.sesiones" max-width="560">
+      <v-card>
+        <v-card-title class="pa-4 pb-2 d-flex align-center gap-2">
+          <v-icon>mdi-devices</v-icon>
+          Sesiones — {{ sesionesTarget?.username }}
+        </v-card-title>
+        <v-divider />
+        <v-card-text class="pa-4">
+          <div v-if="sesionesLoading" class="d-flex justify-center py-6">
+            <v-progress-circular indeterminate color="primary" />
+          </div>
+          <template v-else>
+            <div class="text-body-2 font-weight-bold mb-2">Actividad reciente</div>
+            <v-list density="compact" bg-color="transparent">
+              <v-list-item
+                v-for="(a, i) in sesionesData.actividad"
+                :key="i"
+                class="px-0"
+              >
+                <template #prepend>
+                  <v-chip :color="accionColor(a.accion)" size="x-small" variant="tonal" class="mr-3">
+                    {{ a.accion.replace(/_/g, ' ') }}
+                  </v-chip>
+                </template>
+                <template #title>
+                  <span class="text-caption">{{ formatDateTime(a.fecha) }}</span>
+                </template>
+              </v-list-item>
+              <v-list-item v-if="!sesionesData.actividad?.length" class="px-0">
+                <span class="text-caption text-medium-emphasis">Sin actividad registrada</span>
+              </v-list-item>
+            </v-list>
+
+            <v-divider class="my-3" />
+
+            <div class="text-body-2 font-weight-bold mb-2">Tokens invalidados (cierres de sesión)</div>
+            <v-list density="compact" bg-color="transparent">
+              <v-list-item
+                v-for="(t, i) in sesionesData.tokensInvalidados"
+                :key="i"
+                class="px-0"
+              >
+                <template #prepend>
+                  <v-icon color="medium-emphasis" size="18" class="mr-2">mdi-logout</v-icon>
+                </template>
+                <template #title>
+                  <span class="text-caption">Expiración: {{ formatDateTime(t.fechaExpiracion) }}</span>
+                </template>
+              </v-list-item>
+              <v-list-item v-if="!sesionesData.tokensInvalidados?.length" class="px-0">
+                <span class="text-caption text-medium-emphasis">Sin tokens invalidados</span>
+              </v-list-item>
+            </v-list>
+          </template>
+        </v-card-text>
+        <v-card-actions class="pa-4 pt-0 justify-end">
+          <v-btn variant="text" @click="dialogs.sesiones = false">Cerrar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- IMPORT RESULT DIALOG -->
+    <v-dialog v-model="dialogs.importResult" max-width="500">
+      <v-card>
+        <v-card-title class="pa-4 pb-2">Resultado de importación</v-card-title>
+        <v-card-text class="pa-4">
+          <v-alert
+            :color="importResult.errores?.length ? 'warning' : 'success'"
+            variant="tonal"
+            density="compact"
+            class="mb-3"
+          >
+            {{ importResult.creados }} usuario(s) creados correctamente.
+            <span v-if="importResult.errores?.length">
+              {{ importResult.errores.length }} fila(s) con error.
+            </span>
+          </v-alert>
+          <v-list v-if="importResult.errores?.length" density="compact" bg-color="transparent">
+            <v-list-item
+              v-for="(e, i) in importResult.errores"
+              :key="i"
+              :subtitle="e.motivo"
+              :title="e.fila"
+              prepend-icon="mdi-alert-circle-outline"
+              class="text-error px-0"
+            />
+          </v-list>
+        </v-card-text>
+        <v-card-actions class="pa-4 pt-0 justify-end">
+          <v-btn color="primary" variant="tonal" @click="dialogs.importResult = false">Aceptar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <!-- Snackbar -->
     <v-snackbar v-model="snack.show" :color="snack.color" timeout="3000" location="bottom end">
       {{ snack.text }}
@@ -518,6 +692,9 @@ const dialogs = reactive({
   password: false,
   toggle: false,
   detalles: false,
+  reset: false,
+  sesiones: false,
+  importResult: false,
 })
 
 // ── Form ──────────────────────────────────────────────────────────────
@@ -678,6 +855,85 @@ async function submitToggle() {
   }
 }
 
+// ── Stats ─────────────────────────────────────────────────────────────
+const stats = reactive({ activos: 0, inactivos: 0, newThisMonth: 0, byRol: [] })
+
+async function loadStats () {
+  try {
+    const data = await store.fetchStats()
+    Object.assign(stats, data)
+  } catch { /* silent */ }
+}
+
+function rolColor (rol) {
+  return { ADMIN: 'primary', RH: 'info', LIDER: 'warning', EMPLEADO: 'secondary' }[rol] ?? 'secondary'
+}
+
+// ── Reset password ─────────────────────────────────────────────────────
+const resetTarget = ref(null)
+
+function confirmReset (item) {
+  resetTarget.value = item
+  dialogs.reset = true
+}
+
+async function submitReset () {
+  saving.value = true
+  try {
+    await store.resetPassword(resetTarget.value.username)
+    showSnack('Contraseña restablecida al valor predeterminado', 'success')
+    dialogs.reset = false
+  } catch (err) {
+    showSnack(err.response?.data?.message || 'Error al restablecer', 'error')
+  } finally {
+    saving.value = false
+  }
+}
+
+// ── Sesiones ───────────────────────────────────────────────────────────
+const sesionesTarget = ref(null)
+const sesionesData   = reactive({ actividad: [], tokensInvalidados: [] })
+const sesionesLoading = ref(false)
+
+async function openSesiones (item) {
+  sesionesTarget.value = item
+  sesionesData.actividad = []
+  sesionesData.tokensInvalidados = []
+  dialogs.sesiones = true
+  sesionesLoading.value = true
+  try {
+    const data = await store.fetchSesiones(item.username)
+    sesionesData.actividad = data.actividad ?? []
+    sesionesData.tokensInvalidados = data.tokensInvalidados ?? []
+  } catch {
+    showSnack('Error al cargar sesiones', 'error')
+  } finally {
+    sesionesLoading.value = false
+  }
+}
+
+// ── Import Excel ───────────────────────────────────────────────────────
+const excelInput = ref(null)
+const importResult = reactive({ creados: 0, errores: [] })
+const importLoading = ref(false)
+
+async function handleImportFile (e) {
+  const file = e.target.files[0]
+  if (!file) return
+  e.target.value = ''
+  importLoading.value = true
+  try {
+    const data = await store.importUsers(file)
+    Object.assign(importResult, data)
+    dialogs.importResult = true
+    if (data.creados > 0) await fetchUsers()
+  } catch (err) {
+    showSnack(err.response?.data?.message || 'Error al importar', 'error')
+  } finally {
+    importLoading.value = false
+  }
+}
+
 // ── Snackbar ──────────────────────────────────────────────────────────
 const snack = reactive({ show: false, text: '', color: 'success' })
 function showSnack(text, color = 'success') {
@@ -717,5 +973,6 @@ const minLen = v => (v && v.length >= 6) || 'Mínimo 6 caracteres'
 // ── Init ──────────────────────────────────────────────────────────────
 onMounted(() => {
   fetchUsers()
+  loadStats()
 })
 </script>
