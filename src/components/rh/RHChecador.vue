@@ -178,16 +178,8 @@
             hover
             :items-per-page="10"
           >
-            <template #item.attTime="{ item }">
-              {{ item.attTime ? new Date(item.attTime).toLocaleString('es-MX') : '—' }}
-            </template>
-            <template #item.verifyType="{ item }">
-              <v-chip size="x-small" variant="tonal">{{ verifyTypeLabel(item.verifyType) }}</v-chip>
-            </template>
-            <template #item.inOutStatus="{ item }">
-              <v-chip size="x-small" :color="item.inOutStatus === 0 ? 'success' : 'warning'" variant="tonal">
-                {{ item.inOutStatus === 0 ? 'Entrada' : item.inOutStatus === 1 ? 'Salida' : item.inOutStatus }}
-              </v-chip>
+            <template #item.recordTime="{ item }">
+              {{ item.recordTime ? new Date(item.recordTime).toLocaleString('es-MX') : '—' }}
             </template>
           </v-data-table>
         </v-card-text>
@@ -225,14 +217,11 @@ const form = reactive({ nombre: '', ip: '', puerto: 4370, password: 0, ubicacion
 const mapeoForm = reactive({ deviceUserId: null, username: '' })
 
 const headersPreview = [
-  { title: 'ID dispositivo', key: 'deviceUserId', align: 'center' },
-  { title: 'Fecha/Hora', key: 'attTime' },
-  { title: 'Tipo verificación', key: 'verifyType', align: 'center' },
-  { title: 'Entrada/Salida', key: 'inOutStatus', align: 'center' },
+  { title: 'userSn', key: 'userSn', align: 'center' },
+  { title: 'deviceUserId', key: 'deviceUserId', align: 'center' },
+  { title: 'Fecha/Hora (recordTime)', key: 'recordTime' },
   { title: 'IP', key: 'ip' },
 ]
-
-const verifyTypeLabel = (v) => ({ 0: 'Contraseña', 1: 'Huella', 3: 'Tarjeta', 4: 'Cara' }[v] ?? `Tipo ${v}`)
 
 const headersDisp = [
   { title: 'Nombre', key: 'nombre' },
