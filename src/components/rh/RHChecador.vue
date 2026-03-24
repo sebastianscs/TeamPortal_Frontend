@@ -250,10 +250,13 @@ async function probarConexion(item) {
 async function sincronizar(item) {
   syncingId.value = item.id
   try {
+    showSnack(`Probando conexión con ${item.nombre}...`, 'info')
+    await store.testConexion(item.id)
+    showSnack(`Sincronizando ${item.nombre}...`, 'info')
     const r = await store.sincronizar(item.id)
     showSnack(`Sync completada: ${r.registrosNuevos} nuevos de ${r.registrosObtenidos}`, 'success')
   } catch (e) {
-    showSnack(e.response?.data?.message || 'Error en sincronización', 'error')
+    showSnack(e.response?.data?.message || 'No se pudo conectar con el dispositivo', 'error')
   } finally { syncingId.value = null }
 }
 
