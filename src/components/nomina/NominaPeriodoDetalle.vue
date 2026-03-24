@@ -42,14 +42,8 @@
         >
           Aprobar todas
         </v-btn>
-        <v-btn
-          color="secondary"
-          disabled
-          prepend-icon="mdi-export"
-          size="small"
-          variant="tonal"
-        >
-          Exportar
+        <v-btn color="success" prepend-icon="mdi-microsoft-excel" size="small" variant="tonal" @click="descargarExcel">
+          Exportar Excel
         </v-btn>
       </div>
     </div>
@@ -493,6 +487,10 @@
     } finally {
       loadingNominas.value = false
     }
+  }
+
+  async function descargarExcel () {
+    await nominaStore.exportarExcel(periodoId, periodo.value?.nombre || periodoId)
   }
 
   async function fetchPeriodo () {

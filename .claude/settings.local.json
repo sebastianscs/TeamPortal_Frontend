@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(grep -E \"\\\\.\\(js|ts\\)$\")",
-      "Bash(find c:UsersSebastián.claude -type f -name *.md)"
+      "Bash(find c:UsersSebastián.claude -type f -name *.md)",
+      "Bash(npm install:*)"
     ]
   }
 }

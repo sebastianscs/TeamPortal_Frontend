@@ -7,6 +7,8 @@ export const useNominaStore = defineStore('nomina', {
     nominasEmpleado: [],
     salarios: [],
     conceptos: [],
+    prestamos: [],
+    tablaISR:  [],
     loading: false,
     error: null,
   }),
@@ -124,6 +126,40 @@ export const useNominaStore = defineStore('nomina', {
       link.click()
       link.remove()
       window.URL.revokeObjectURL(url)
+    },
+
+    async fetchPrestamos () {
+      const res = await api.get('/nomina/prestamos')
+      this.prestamos = res.data.data ?? []
+    },
+    async createPrestamo (data) {
+      const res = await api.post('/nomina/prestamos', data)
+      return res.data
+    },
+    async updatePrestamo (id, data) {
+      const res = await api.put(`/nomina/prestamos/${id}`, data)
+      return res.data
+    },
+    async fetchTablaISR () {
+      const res = await api.get('/nomina/config/isr')
+      this.tablaISR = res.data.data ?? []
+    },
+    async upsertTablaISR (data) {
+      const res = await api.post('/nomina/config/isr', data)
+      return res.data
+    },
+    async exportarExcel (periodoId, nombre) {
+      const res = await api.get(`/nomina/periodos/${periodoId}/exportar`, { responseType: 'blob' })
+      const url = URL.createObjectURL(new Blob([res.data]))
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `nomina-${nombre}.xlsx`
+      a.click()
+      URL.revokeObjectURL(url)
+    },
+    async getSalarioHistorial (username) {
+      const res = await api.get(`/nomina/salarios/${username}`)
+      return res.data.data ?? []
     },
   },
 })

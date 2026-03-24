@@ -16,6 +16,18 @@
         <v-icon class="mr-2" size="18">mdi-currency-usd</v-icon>
         Salarios
       </v-tab>
+      <v-tab value="prestamos">
+        <v-icon class="mr-2" size="18">mdi-hand-coin-outline</v-icon>
+        Préstamos
+      </v-tab>
+      <v-tab value="configuracion">
+        <v-icon class="mr-2" size="18">mdi-cog-outline</v-icon>
+        Configuración
+      </v-tab>
+      <v-tab value="calendario">
+        <v-icon class="mr-2" size="18">mdi-calendar-month-outline</v-icon>
+        Calendario
+      </v-tab>
     </v-tabs>
 
     <v-window v-model="tab">
@@ -113,6 +125,21 @@
 
       </v-window-item>
 
+      <!-- ── PRÉSTAMOS TAB ── -->
+      <v-window-item value="prestamos">
+        <NomPrestamosCrud />
+      </v-window-item>
+
+      <!-- ── CONFIGURACIÓN TAB ── -->
+      <v-window-item value="configuracion">
+        <NomConfigISR />
+      </v-window-item>
+
+      <!-- ── CALENDARIO TAB ── -->
+      <v-window-item value="calendario">
+        <NomCalendario @ver-periodo="id => router.push(`/admin/nomina/${id}`)" />
+      </v-window-item>
+
       <!-- ── SALARIOS TAB ── -->
       <v-window-item value="salarios">
 
@@ -161,6 +188,9 @@
               >
                 Editar
               </v-btn>
+            </template>
+            <template #item.historial="{ item }">
+              <v-btn color="info" icon="mdi-history" size="small" variant="text" @click="verHistorial(item.username)" />
             </template>
           </v-data-table>
         </v-card>
@@ -433,6 +463,39 @@
       </v-card>
     </v-dialog>
 
+    <!-- HISTORIAL SALARIOS -->
+    <v-dialog v-model="historialDialog" max-width="500" scrollable>
+      <v-card color="surface-variant" rounded="lg">
+        <div class="d-flex align-center justify-space-between px-4 pt-4 pb-2">
+          <span class="text-h6 font-weight-bold">Historial de salarios</span>
+          <v-btn icon size="small" variant="text" @click="historialDialog = false"><v-icon>mdi-close</v-icon></v-btn>
+        </div>
+        <v-divider />
+        <v-card-text style="max-height: 60vh">
+          <v-timeline align="start" density="compact" side="end">
+            <v-timeline-item
+              v-for="h in historialSalarios"
+              :key="h.id"
+              :dot-color="h.activo ? 'primary' : 'default'"
+              size="small"
+            >
+              <template #opposite>
+                <span class="text-caption text-medium-emphasis">{{ fmtFechaHora(h.creadoEn) }}</span>
+              </template>
+              <div>
+                <div class="text-body-2 font-weight-bold">{{ fmtMXN(h.sueldoDiario) }} / día</div>
+                <div class="text-caption text-medium-emphasis">{{ h.frecuencia }} · {{ h.activo ? 'Vigente' : 'Histórico' }}</div>
+              </div>
+            </v-timeline-item>
+          </v-timeline>
+        </v-card-text>
+        <v-card-actions class="pa-4">
+          <v-spacer />
+          <v-btn variant="text" @click="historialDialog = false">Cerrar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <!-- Snackbar -->
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" location="bottom right" :timeout="3000">
       {{ snackbar.text }}
@@ -445,6 +508,9 @@
   import { onMounted, ref } from 'vue'
   import { useRouter } from 'vue-router'
   import { useNominaStore } from '@/stores/nomina'
+  import NomPrestamosCrud from '@/components/nomina/NomPrestamosCrud.vue'
+  import NomConfigISR     from '@/components/nomina/NomConfigISR.vue'
+  import NomCalendario    from '@/components/nomina/NomCalendario.vue'
 
   const router = useRouter()
 
@@ -549,6 +615,7 @@
     { title: 'Sueldo diario', key: 'sueldoDiario', sortable: false },
     { title: 'Frecuencia', key: 'frecuencia', sortable: false },
     { title: 'Acciones', key: 'acciones', sortable: false },
+    { title: '', key: 'historial', sortable: false, width: '50px' },
   ]
 
   function openSalarioDialog (item) {
@@ -633,8 +700,25 @@
     }
   }
 
+  // ── Historial salarios ───────────────────────────────────────────────────────
+  const historialDialog  = ref(false)
+  const historialSalarios = ref([])
+
+  async function verHistorial (username) {
+    historialSalarios.value = await nominaStore.getSalarioHistorial(username)
+    historialDialog.value = true
+  }
+
+  function fmtFechaHora (d) {
+    return d ? new Date(d).toLocaleString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'
+  }
+
   // ── Helpers ─────────────────────────────────────────────────────────────────
   function formatMXN (n) {
+    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(Number(n) || 0)
+  }
+
+  function fmtMXN (n) {
     return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(Number(n) || 0)
   }
 
