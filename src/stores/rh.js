@@ -123,5 +123,79 @@ export const useRHStore = defineStore('rh', {
       const res = await api.put(`/rh/catalogos/puestos/${id}`, data)
       return res.data
     },
+
+    // Expediente
+    async getDocumentos (username) {
+      const res = await api.get(`/expediente/${username}`)
+      return res.data.data
+    },
+    async uploadDocumento (username, formData) {
+      const res = await api.post(`/expediente/${username}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      return res.data
+    },
+    async deleteDocumento (id) {
+      const res = await api.delete(`/expediente/${id}`)
+      return res.data
+    },
+
+    // Vacaciones
+    async getVacacionesDisponibles (username) {
+      const res = await api.get(`/vacaciones/disponibles/${username}`)
+      return res.data.data
+    },
+    async getSolicitudesVacaciones (params = {}) {
+      const res = await api.get('/vacaciones/solicitudes', { params })
+      return res.data.data
+    },
+    async createSolicitudVacaciones (data) {
+      const res = await api.post('/vacaciones/solicitudes', data)
+      return res.data
+    },
+    async resolverVacaciones (id, data) {
+      const res = await api.patch(`/vacaciones/solicitudes/${id}`, data)
+      return res.data
+    },
+
+    // Onboarding
+    async getPlantillaOnboarding () {
+      const res = await api.get('/onboarding/plantilla')
+      return res.data.data
+    },
+    async createTareaOnboarding (data) {
+      const res = await api.post('/onboarding/plantilla', data)
+      return res.data
+    },
+    async updateTareaOnboarding (id, data) {
+      const res = await api.put(`/onboarding/plantilla/${id}`, data)
+      return res.data
+    },
+    async getTareasEmpleado (username) {
+      const res = await api.get(`/onboarding/${username}`)
+      return res.data.data
+    },
+    async asignarOnboarding (username) {
+      const res = await api.post(`/onboarding/${username}/asignar`)
+      return res.data
+    },
+    async completarTareaOnboarding (username, tareaId, completada) {
+      const res = await api.patch(`/onboarding/${username}/${tareaId}`, { completada })
+      return res.data
+    },
+
+    // Rotación
+    async registrarBaja (data) {
+      const res = await api.post('/rh/bajas', data)
+      return res.data
+    },
+    async getBajas (params = {}) {
+      const res = await api.get('/rh/bajas', { params })
+      return res.data.data
+    },
+    async getRotacionStats () {
+      const res = await api.get('/rh/rotacion/stats')
+      return res.data.data
+    },
   },
 })

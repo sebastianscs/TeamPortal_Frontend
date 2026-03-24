@@ -19,6 +19,7 @@
       <v-tab value="organigrama" prepend-icon="mdi-sitemap">Organigrama</v-tab>
       <v-tab value="turnos" prepend-icon="mdi-clock-outline">Turnos</v-tab>
       <v-tab value="catalogos" prepend-icon="mdi-tag-multiple-outline">Catálogos</v-tab>
+      <v-tab value="expediente" prepend-icon="mdi-folder-account">Expediente</v-tab>
     </v-tabs>
 
     <v-window v-model="tab">
@@ -133,6 +134,41 @@
       <!-- ── TAB CATÁLOGOS ──────────────────────────────────────────────────── -->
       <v-window-item value="catalogos">
         <RHCatalogos />
+      </v-window-item>
+
+      <!-- ── TAB EXPEDIENTE ─────────────────────────────────────────────────── -->
+      <v-window-item value="expediente">
+        <div v-if="expedienteEmpleado">
+          <div class="d-flex align-center gap-3 mb-4">
+            <v-autocomplete
+              v-model="expedienteEmpleado"
+              :items="store.personal"
+              item-title="nombreCompleto"
+              item-value="username"
+              label="Empleado"
+              variant="outlined"
+              density="compact"
+              hide-details
+              :custom-filter="searchFilter"
+              style="max-width: 320px"
+            />
+          </div>
+          <RHExpediente :username="expedienteEmpleado" />
+        </div>
+        <div v-else class="pa-4">
+          <v-autocomplete
+            v-model="expedienteEmpleado"
+            :items="store.personal"
+            item-title="nombreCompleto"
+            item-value="username"
+            label="Seleccionar empleado para ver su expediente"
+            variant="outlined"
+            density="comfortable"
+            hide-details
+            :custom-filter="searchFilter"
+            style="max-width: 400px"
+          />
+        </div>
       </v-window-item>
 
     </v-window>
@@ -419,9 +455,11 @@
   import RHOrganigrama from '@/components/rh/RHOrganigrama.vue'
   import RHTurnos from '@/components/rh/RHTurnos.vue'
   import RHCatalogos from '@/components/rh/RHCatalogos.vue'
+  import RHExpediente from '@/components/rh/RHExpediente.vue'
 
   const store = useRHStore()
   const tab   = ref('personal')
+  const expedienteEmpleado = ref(null)
 
   // ── Catálogos ──────────────────────────────────────────────────────
   const opcionesSexo            = ['Masculino', 'Femenino', 'Otro']

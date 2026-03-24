@@ -27,18 +27,28 @@
       </v-btn>
     </div>
 
+    <!-- Búsqueda y filtro -->
+    <v-row dense class="mb-3">
+      <v-col cols="12" sm="5">
+        <v-text-field v-model="busqueda" density="compact" hide-details label="Buscar empleado" prepend-inner-icon="mdi-magnify" variant="outlined" clearable />
+      </v-col>
+      <v-col cols="12" sm="4">
+        <v-select v-model="filtroDept" :items="departamentos" density="compact" hide-details label="Departamento" variant="outlined" clearable />
+      </v-col>
+    </v-row>
+
     <v-skeleton-loader v-if="loading" type="card, card, card" />
 
     <template v-else>
       <!-- ── EQUIPOS POR LÍDER ─────────────────────────────── -->
-      <div v-if="data.lideres.length" class="mb-6">
+      <div v-if="lideresFiltered.length" class="mb-6">
         <div class="text-subtitle-2 text-medium-emphasis text-uppercase mb-3 d-flex align-center gap-2">
           <v-icon size="16">mdi-account-tie</v-icon> Equipos
         </div>
 
         <v-row>
           <v-col
-            v-for="lider in data.lideres"
+            v-for="lider in lideresFiltered"
             :key="lider.username"
             cols="12" md="6" lg="4"
           >
@@ -65,6 +75,7 @@
                     :key="emp.username"
                     :subtitle="emp.puesto || emp.departamento || emp.username"
                     class="px-4"
+                    @click="verDetalle(emp)"
                   >
                     <template #prepend>
                       <v-avatar color="primary" size="28" variant="tonal" class="mr-2">
@@ -109,18 +120,19 @@
       </div>
 
       <!-- ── SIN ASIGNAR ───────────────────────────────────── -->
-      <div v-if="data.sinLider.length">
+      <div v-if="sinLiderFiltered.length">
         <div class="text-subtitle-2 text-medium-emphasis text-uppercase mb-3 d-flex align-center gap-2">
           <v-icon size="16" color="warning">mdi-account-question</v-icon>
-          Sin líder asignado ({{ data.sinLider.length }})
+          Sin líder asignado ({{ sinLiderFiltered.length }})
         </div>
 
         <v-card variant="tonal" rounded="lg">
           <v-list density="compact">
             <v-list-item
-              v-for="emp in data.sinLider"
+              v-for="emp in sinLiderFiltered"
               :key="emp.username"
               class="px-4"
+              @click="verDetalle(emp)"
             >
               <template #prepend>
                 <v-avatar color="surface-variant" size="32" class="mr-3">
@@ -150,11 +162,37 @@
       </div>
 
       <!-- Estado vacío -->
-      <v-card v-if="!data.lideres.length && !data.sinLider.length" variant="tonal" class="pa-8 text-center">
+      <v-card v-if="!lideresFiltered.length && !sinLiderFiltered.length" variant="tonal" class="pa-8 text-center">
         <v-icon size="48" color="surface-variant" class="mb-3">mdi-account-group-outline</v-icon>
         <div class="text-body-1 text-medium-emphasis">No hay personal registrado</div>
       </v-card>
     </template>
+
+    <!-- Drawer detalle empleado -->
+    <v-navigation-drawer v-model="drawer" location="right" temporary width="320">
+      <div class="pa-4">
+        <div class="d-flex align-center justify-space-between mb-4">
+          <div class="text-body-1 font-weight-bold">Detalle</div>
+          <v-btn icon size="small" variant="text" @click="drawer = false"><v-icon>mdi-close</v-icon></v-btn>
+        </div>
+        <div v-if="detalleEmp" class="d-flex flex-column align-center text-center mb-4">
+          <v-avatar color="primary" size="64" variant="tonal" class="mb-3">
+            <span class="text-h6 font-weight-bold">{{ iniciales(detalleEmp.nombreCompleto) }}</span>
+          </v-avatar>
+          <div class="text-body-1 font-weight-bold">{{ detalleEmp.nombreCompleto }}</div>
+          <div class="text-caption text-medium-emphasis">{{ detalleEmp.puesto || 'Sin puesto' }}</div>
+        </div>
+        <v-divider class="mb-3" />
+        <v-list density="compact" bg-color="transparent">
+          <v-list-item prepend-icon="mdi-office-building" :subtitle="detalleEmp?.departamento || '—'" title="Departamento" />
+          <v-list-item prepend-icon="mdi-email-outline" :subtitle="detalleEmp?.email || '—'" title="Email" />
+          <v-list-item prepend-icon="mdi-tag-outline" :subtitle="detalleEmp?.username || '—'" title="Username" />
+        </v-list>
+        <v-btn class="mt-4" color="primary" prepend-icon="mdi-account-switch" size="small" variant="tonal" block @click="abrirAsignar(detalleEmp, detalleEmp?.liderUsername)">
+          Reasignar líder
+        </v-btn>
+      </div>
+    </v-navigation-drawer>
 
     <!-- ── DIALOG ASIGNAR LÍDER ──────────────────────────── -->
     <v-dialog v-model="dialog" max-width="420">
@@ -213,12 +251,42 @@ const saving           = ref(false)
 const liderSeleccionado = ref(null)
 const asignarTarget    = ref(null)
 const snack            = reactive({ show: false, text: '', color: 'success' })
+const busqueda   = ref('')
+const filtroDept = ref(null)
+const drawer     = ref(false)
+const detalleEmp = ref(null)
 
 const data = reactive({ lideres: [], sinLider: [] })
 
 const totalAsignados = computed(() =>
   data.lideres.reduce((sum, l) => sum + l.equipo.length, 0)
 )
+
+const departamentos = computed(() => {
+  const depts = new Set()
+  data.lideres.forEach(l => l.equipo.forEach(e => { if (e.departamento) depts.add(e.departamento) }))
+  data.sinLider.forEach(e => { if (e.departamento) depts.add(e.departamento) })
+  return [...depts].sort()
+})
+
+const lideresFiltered = computed(() => {
+  return data.lideres.map(l => ({
+    ...l,
+    equipo: l.equipo.filter(e => {
+      const matchBusq = !busqueda.value || e.nombreCompleto?.toLowerCase().includes(busqueda.value.toLowerCase())
+      const matchDept = !filtroDept.value || e.departamento === filtroDept.value
+      return matchBusq && matchDept
+    }),
+  })).filter(l => l.equipo.length || !filtroDept.value)
+})
+
+const sinLiderFiltered = computed(() => {
+  return data.sinLider.filter(e => {
+    const matchBusq = !busqueda.value || e.nombreCompleto?.toLowerCase().includes(busqueda.value.toLowerCase())
+    const matchDept = !filtroDept.value || e.departamento === filtroDept.value
+    return matchBusq && matchDept
+  })
+})
 
 // Todos los usuarios activos pueden ser lider (Opción B)
 const todosUsuarios = ref([])
@@ -257,6 +325,11 @@ async function cargar() {
   } finally {
     loading.value = false
   }
+}
+
+function verDetalle(emp) {
+  detalleEmp.value = emp
+  drawer.value = true
 }
 
 function abrirAsignar(emp, liderActual) {
