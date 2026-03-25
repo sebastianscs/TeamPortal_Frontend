@@ -38,6 +38,11 @@
                     <v-btn v-bind="props" icon="mdi-wifi" size="small" variant="text" :loading="testingId === item.id" @click="probarConexion(item)" />
                   </template>
                 </v-tooltip>
+                <v-tooltip text="Ver usuarios del dispositivo">
+                  <template #activator="{ props }">
+                    <v-btn v-bind="props" icon="mdi-account-multiple" size="small" variant="text" color="info" :loading="usersLoadingId === item.id" @click="verUsuarios(item)" />
+                  </template>
+                </v-tooltip>
                 <v-tooltip text="Previsualizar registros">
                   <template #activator="{ props }">
                     <v-btn v-bind="props" icon="mdi-eye" size="small" variant="text" color="secondary" :loading="previewingId === item.id" @click="previsualizar(item)" />
@@ -156,6 +161,36 @@
       </v-card>
     </v-dialog>
 
+    <!-- Dialog usuarios del dispositivo -->
+    <v-dialog v-model="usersDialog" max-width="700">
+      <v-card color="surface-variant" rounded="lg">
+        <div class="d-flex align-center justify-space-between px-4 pt-4 pb-2">
+          <div>
+            <div class="text-h6 font-weight-bold">Usuarios en el dispositivo</div>
+            <div class="text-caption text-medium-emphasis">Total: <strong>{{ usersData.total }}</strong> usuarios registrados</div>
+          </div>
+          <v-btn icon size="small" variant="text" @click="usersDialog = false"><v-icon>mdi-close</v-icon></v-btn>
+        </div>
+        <v-divider />
+        <v-card-text class="pa-0">
+          <v-data-table :headers="headersUsers" :items="usersData.usuarios" density="compact" hover :items-per-page="15">
+            <template #item.privilege="{ item }">
+              <v-chip size="x-small" :color="item.privilege > 0 ? 'warning' : 'default'" variant="tonal">
+                {{ item.privilege > 0 ? 'Admin' : 'Usuario' }}
+              </v-chip>
+            </template>
+          </v-data-table>
+        </v-card-text>
+        <v-divider />
+        <v-card-actions class="pa-3">
+          <v-icon color="info" size="small">mdi-information</v-icon>
+          <span class="text-caption text-medium-emphasis ml-1">
+            Si el campo <code>userId</code> acepta texto, puedes usarlo como username directamente sin tabla de mapeo.
+          </span>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <!-- Dialog previsualización -->
     <v-dialog v-model="previewDialog" max-width="900">
       <v-card color="surface-variant" rounded="lg">
@@ -205,6 +240,9 @@ const syncingId = ref(null)
 const previewingId = ref(null)
 const previewDialog = ref(false)
 const previewData = ref({ totalRegistros: 0, muestra: [], camposDisponibles: [] })
+const usersLoadingId = ref(null)
+const usersDialog = ref(false)
+const usersData = ref({ total: 0, usuarios: [] })
 const dialog = ref(false)
 const mapeoDialog = ref(false)
 const editTarget = ref(null)
@@ -215,6 +253,14 @@ const snack = reactive({ show: false, text: '', color: 'success' })
 
 const form = reactive({ nombre: '', ip: '', puerto: 4370, password: 0, ubicacion: '', activo: true })
 const mapeoForm = reactive({ deviceUserId: null, username: '' })
+
+const headersUsers = [
+  { title: 'uid', key: 'uid', align: 'center' },
+  { title: 'userId', key: 'userId' },
+  { title: 'Nombre', key: 'name' },
+  { title: 'Tarjeta', key: 'cardno' },
+  { title: 'Rol', key: 'privilege', align: 'center' },
+]
 
 const headersPreview = [
   { title: 'userSn', key: 'userSn', align: 'center' },
@@ -280,6 +326,17 @@ async function submitDialog() {
     showSnack(editTarget.value ? 'Dispositivo actualizado' : 'Dispositivo creado')
   } catch { showSnack('Error al guardar', 'error') }
   finally { saving.value = false }
+}
+
+async function verUsuarios(item) {
+  usersLoadingId.value = item.id
+  try {
+    const r = await api.get(`/checador/${item.id}/usuarios`)
+    usersData.value = r.data
+    usersDialog.value = true
+  } catch (e) {
+    showSnack(e.response?.data?.message || 'Error al obtener usuarios', 'error')
+  } finally { usersLoadingId.value = null }
 }
 
 async function previsualizar(item) {
